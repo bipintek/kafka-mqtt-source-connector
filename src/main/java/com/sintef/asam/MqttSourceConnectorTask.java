@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import org.bson.Document;
 
@@ -153,20 +154,16 @@ public class MqttSourceConnectorTask extends SourceTask implements MqttCallback 
     }
 
     private String makeDBDoc(byte[] payload, String topic) {
-      String msg = new String(payload);
-      Document message = Document.parse(msg);
-      Document doc = new Document();
-      List<String> topicArr = Arrays.asList(topic.split("/"));
-      Long unique_id = Long.parseLong(topicArr.get(21));
-      Long quadkey = Long.parseLong(String.join("",topicArr.subList(2,20)));
-      String now = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-      Document dt = new Document();
-      dt.put("$date",now);
-      doc.put("message",message);
-      doc.put("unique_id",unique_id);
-      doc.put("quadkey",quadkey);
-      doc.put("updateDate",dt);
-      doc.put("pushed",false);
-      return doc.toJson();
+        String msg = new String(payload);
+        Document message = Document.parse(msg);
+        Document doc = new Document();
+        Long timestamp = ZonedDateTime.now().toInstant().toEpochMilli();
+
+        doc.put("id", message.get("id"));
+        doc.put("val", message.get("val"));
+        doc.put("ts", message.get("ts"));
+        doc.put("timestamp", timestamp);
+
+        return doc.toJson();
     }
 }
