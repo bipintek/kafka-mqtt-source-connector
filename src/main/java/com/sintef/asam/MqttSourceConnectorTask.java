@@ -117,15 +117,19 @@ public class MqttSourceConnectorTask extends SourceTask implements MqttCallback 
 
     @Override
     public void messageArrived(String tempMqttTopic, MqttMessage mqttMessage) {
-        logger.debug("Mqtt message arrived to connector: '{}', running client: '{}', on topic: '{}'.", connectorName, mqttClientId, tempMqttTopic);
+        logger.info("Mqtt message arrived to connector: '{}', running client: '{}', on topic: '{}'.", connectorName, mqttClientId, tempMqttTopic);
         try {
-            logger.debug("Mqtt message payload in byte array: '{}'", mqttMessage.getPayload());
+            logger.info("Mqtt message payload in byte array: '{}'", mqttMessage.getPayload());
             //mqttRecordQueue.put(new SourceRecord(null, null, kafkaTopic, null,
             //        Schema.STRING_SCHEMA, addTopicToJSONByteArray(mqttMessage.getPayload(), tempMqttTopic))
             //);
-            mqttRecordQueue.put(new SourceRecord(null, null, kafkaTopic, null,
-                    Schema.STRING_SCHEMA, makeDBDoc(mqttMessage.getPayload(), tempMqttTopic))
-            );
+            // mqttRecordQueue.put(new SourceRecord(null, null, kafkaTopic, null,
+            //         Schema.STRING_SCHEMA, makeDBDoc(mqttMessage.getPayload(), tempMqttTopic))
+            // );
+            SourceRecord rc = new SourceRecord(null, null, kafkaTopic, null,
+            null, makeDBDoc(mqttMessage.getPayload(), tempMqttTopic));
+            logger.error("rc '{}'", rc.toString());
+            mqttRecordQueue.put(rc);
         } catch (Exception e) {
             logger.error("ERROR: Not able to create source record from mqtt message '{}' arrived on topic '{}' for client '{}'.", mqttMessage.toString(), tempMqttTopic, mqttClientId);
             logger.error(e);
@@ -155,15 +159,18 @@ public class MqttSourceConnectorTask extends SourceTask implements MqttCallback 
 
     private String makeDBDoc(byte[] payload, String topic) {
         String msg = new String(payload);
+        logger.error("msg '{}'", msg);
         Document message = Document.parse(msg);
-        Document doc = new Document();
-        Long timestamp = ZonedDateTime.now().toInstant().toEpochMilli();
+        // Document doc = new Document();
+        // Long timestamp = ZonedDateTime.now().toInstant().toEpochMilli();
 
-        doc.put("id", message.get("id"));
-        doc.put("val", message.get("val"));
-        doc.put("ts", message.get("ts"));
-        doc.put("timestamp", timestamp);
-
-        return doc.toJson();
+        // doc.put("id", message.get("id"));
+        // doc.put("val", message.get("val"));
+        // doc.put("ts", message.get("ts"));
+        // doc.put("gId", message.get("gId"));
+        // doc.put("topic", topic);
+        message.put("topic", topic);
+        logger.error("message.toJson(): '{}'", message.toJson() );
+        return message.toJson();
     }
 }
