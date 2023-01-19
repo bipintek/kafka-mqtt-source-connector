@@ -46,7 +46,7 @@ public class MqttSourceConnectorConfig extends AbstractConfig {
                         "If secure (SSL) then path to client crt is needed.")
                 .define("mqtt.connector.ssl.key", Type.STRING, "./client.key", Importance.LOW,
                         "If secure (SSL) then path to client key is needed.")
-                .define("mqtt.connector.kafka.topic", Type.STRING, "upstream", Importance.MEDIUM,
+                .define("mqtt.connector.kafka.topic", Type.STRING, "sensor_data", Importance.MEDIUM,
                         "Kafka topic to publish on. This depends on processing unit.")
                 .define("mqtt.connector.kafka.name", Type.STRING, "source_kafka", Importance.MEDIUM,
                         "Kafka topic to publish on. This depends on processing unit.");
